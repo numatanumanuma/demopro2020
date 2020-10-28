@@ -14,6 +14,9 @@ int main(int argc, char **argv)
     nh.param("sound_file", sound_file, std::string("/home/suzuki-t/.ros/media/sample.wav"));
 	nh.param("video_file", video_file, std::string("/home/suzuki-t/.ros/media/sample.mp4"));
 
+    std::string image_file1 = "/home/suzuki-t/.ros/media/sample1.jpg";
+    std::string image_file2 = "/home/suzuki-t/.ros/media/sample2.jpg";
+
     SoundPlayer soundplayer;
     VideoPlayer videoplayer;
     Judgement judgement;
@@ -31,27 +34,40 @@ int main(int argc, char **argv)
             std::cout << "input key... " << key << std::endl;
         }
 
-        switch (key) {
-            case 's':
-                soundplayer.playOnce();
-                break;
-            case 'x':
-                soundplayer.cancel();
-                break;
-        }
-        switch (key) {
-            case 's':
-                if (!videoplayer.playing)
-                    videoplayer.play();
+        if(1){
+            switch (key) {
+                case 's':
+                    soundplayer.playOnce();
+                    break;
+                case 'x':
+                    soundplayer.cancel();
+                    break;
+            }
+            switch (key) {
+                case 'd':
                     // videoplayer.playOnce();
-                break;
-            case 'x':
-                if (videoplayer.playing)
+                    videoplayer.play();
+                    break;
+                case 'c':
                     videoplayer.cancel();
-                break;
+                    break;
+            }
         }
 
-        key = 'c';
+        switch (key) {
+            case '1':
+                videoplayer.showImage(image_file1);
+                break;
+            case '2':
+                videoplayer.showImage(image_file2);
+                break;
+            case '3':
+                soundplayer.say("MASUKUWOTUKENASAI");
+                break;
+        }
+        key = 'p';
+
+
         ros::spinOnce();
         looprate.sleep();
     }

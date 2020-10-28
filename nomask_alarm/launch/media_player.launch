@@ -1,0 +1,7 @@
+<launch>
+
+    <node pkg="sound_play" name="sound_play" type="soundplay_node.py" output="screen" respawn="true"/>
+
+    <node pkg="video_player" name="video_player" type="video_player_node" output="screen" respawn="true"/>
+
+</launch>
