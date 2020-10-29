@@ -5,8 +5,8 @@ Judgement::Judgement(){
     timer_ = nh.createTimer(ros::Duration(0.05), &Judgement::timerCallback, this);
     darknet_sub_ = nh.subscribe("/darknet_ros/bounding_boxes", 100,
         &Judgement::darknetCallback, this);
-    nomask_class = "nomask";
-    mask_class = "mask";
+    nomask_class = "dead";
+    mask_class = "alive";
 }
 
 Judgement::~Judgement(){
@@ -21,7 +21,7 @@ void Judgement::timerCallback(const ros::TimerEvent&){
     
 }
 
-void Judgement::judge(){
+bool Judgement::judge(){
     int nomask_num;
     int mask_num;
     for (const auto& bounding_box : results_.bounding_boxes) {
@@ -30,8 +30,14 @@ void Judgement::judge(){
         if (bounding_box.Class == mask_class)
             mask_num ++;
     }
-    if (nomask_num > mask_num){
-        ROS_INFO("コラコラ");
+    if (nomask_num == 0 && mask_num == 0){
+        ros::Duration(0.5).sleep();
+        ROS_INFO("Not find person")
+        judge();
     }
-    // みたいな？
+    if (nomask_num > mask_num){
+        return true;
+    }else{
+        return false;
+    }
 }

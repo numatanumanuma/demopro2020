@@ -10,7 +10,7 @@ public:
     Judgement();
     ~Judgement();
     void timerCallback(const ros::TimerEvent&);
-    void judge();
+    bool judge();
    
 private:
     ros::Timer timer_;
