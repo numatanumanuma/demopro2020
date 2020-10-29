@@ -1,6 +1,6 @@
 <launch>
 
-    <arg name="path" default="/home/suzuki-t/nomask_media/"/>
+    <arg name="path" default="$(find nomask_alarm)/media/"/>
 
     <node pkg="nomask_alarm" name="nomask_alarm" type="nomask_alarm_node" output="screen" respawn="true">
         <param name="sample_sound1" value="$(arg path)sample1.wav"/>

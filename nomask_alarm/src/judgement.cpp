@@ -32,7 +32,7 @@ bool Judgement::judge(){
     }
     if (nomask_num == 0 && mask_num == 0){
         ros::Duration(0.5).sleep();
-        ROS_INFO("Not find person")
+        ROS_INFO("Not find person");
         judge();
     }
     if (nomask_num > mask_num){

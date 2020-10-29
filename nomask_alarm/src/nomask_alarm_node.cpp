@@ -40,7 +40,7 @@ int main(int argc, char **argv)
 
     while (ros::ok()) {
 
-        if (0) {
+        if (1) {
             char key;
             if (kbhit()) {
                 std::cin >> key;
@@ -96,7 +96,7 @@ int main(int argc, char **argv)
         }
         switch (state){
             case 1:
-                if (judgement.judge){
+                if (judgement.judge()){
                     videoplayer.setVideo(curse_video);
                     videoplayer.playOnce();
                     break;
