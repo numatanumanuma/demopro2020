@@ -5,8 +5,8 @@ Judgement::Judgement(){
     timer_ = nh.createTimer(ros::Duration(0.05), &Judgement::timerCallback, this);
     darknet_sub_ = nh.subscribe("/darknet_ros/bounding_boxes", 100,
         &Judgement::darknetCallback, this);
-    nomask_class = "dead";
-    mask_class = "alive";
+    nomask_class = "no_maskman";
+    mask_class = "maskman";
     limit_time_ = 3.0;
 }
 
