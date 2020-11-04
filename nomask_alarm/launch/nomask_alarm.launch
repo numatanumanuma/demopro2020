@@ -17,6 +17,10 @@
         <param name="face2" value="$(arg path)face2.png"/>
         <param name="face3" value="$(arg path)face3.png"/>
         <param name="face4" value="$(arg path)face4.png"/>
+        <param name="face5" value="$(arg path)face5.png"/>
+        <param name="black" value="$(arg path)black.jpg"/>
+
+        <param name="debug" value="false"/>
 
     </node>
 

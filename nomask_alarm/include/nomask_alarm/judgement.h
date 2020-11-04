@@ -20,6 +20,8 @@ private:
     std::string nomask_class;
     std::string mask_class;
 
+    double limit_time_;
+
     void darknetCallback(const darknet_ros_msgs::BoundingBoxes::ConstPtr& msg);
 
 };

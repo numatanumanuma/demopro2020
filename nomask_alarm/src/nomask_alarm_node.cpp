@@ -1,121 +1,174 @@
-#include "sound_player/sound_player.h"
-#include "video_player/video_player.h"
-#include "nomask_alarm/judgement.h"
-#include "kbhit.h"
+#include "nomask_alarm/nomask_alarm.h"
+
+
+NomaskAlarm::NomaskAlarm(){
+    timer_ = nh_private_.createTimer(ros::Duration(0.05), &NomaskAlarm::timerCallback, this);
+
+    ros::NodeHandle nh("~");
+    nh.param("sample_sound1", sample_sound1_, std::string("/home/suzuki-t/nomask_media/sample1.wav"));
+    nh.param("sample_sound2", sample_sound2_, std::string("/home/suzuki-t/nomask_media/sample2.wav"));
+	nh.param("sample_video1", sample_video1_, std::string("/home/suzuki-t/nomask_media/sample1.mp4"));
+    nh.param("sample_image1", sample_image1_, std::string("/home/suzuki-t/nomask_media/sample1.jpg"));
+	nh.param("sample_image2", sample_image2_, std::string("/home/suzuki-t/nomask_media/sample2.jpg"));
+
+    nh.param("curse_sound", curse_sound_, std::string("/home/suzuki-t/nomask_media/curse.wav"));
+    nh.param("curse_sound1", curse_sound1_, std::string("/home/suzuki-t/nomask_media/curse1.wav"));
+    nh.param("curse_sound2", curse_sound2_, std::string("/home/suzuki-t/nomask_media/curse2.wav"));
+	nh.param("curse_video", curse_video_, std::string("/home/suzuki-t/nomask_media/curse.mp4"));
+	nh.param("face1", face1_, std::string("/home/suzuki-t/nomask_media/face1.png"));
+	nh.param("face2", face2_, std::string("/home/suzuki-t/nomask_media/face2.png"));
+	nh.param("face3", face3_, std::string("/home/suzuki-t/nomask_media/face3.png"));
+	nh.param("face4", face4_, std::string("/home/suzuki-t/nomask_media/face4.png"));
+	nh.param("face5", face5_, std::string("/home/suzuki-t/nomask_media/face5.png"));
+	nh.param("black", black_, std::string("/home/suzuki-t/nomask_media/black.jpg"));
+
+	nh.param("debug", debug_, true);
+
+    start_t_ = ros::Time::now();
+    limit_t_ = ros::Duration(1);
+
+    state_ = 1;
+
+    ros::Duration(1).sleep();
+
+}
+
+NomaskAlarm::~NomaskAlarm(){
+
+}
+
+void NomaskAlarm::timerCallback(const ros::TimerEvent&){
+    if (kbhit()) {
+        std::cin >> key_;
+        std::cout << "input key... " << key_ << std::endl;
+    }
+    
+    if (debug_) {
+        debug();
+    } else{
+        run();
+    }
+    
+    key_ = '@';
+}
+
+void NomaskAlarm::run() {
+    switch (state_){
+        case 1:
+            // ROS_INFO("wait...");
+            if (key_ == 's') {
+                state_ = 2;
+            }
+            break;
+        case 2:
+            videoplayer_.showImage(face1_);
+            startTimer(5);
+            state_ = 3;
+            break;
+        case 3:
+            if (checkTimer()){
+                state_ = 4;
+            }
+            break;
+        case 4:
+            if (judgement_.judge()){
+                videoplayer_.showImage(face4_);
+            } else {
+                videoplayer_.showImage(face5_);
+            }
+            state_ = 1;
+            break;
+        default:
+            break;
+    }
+}
+
+void NomaskAlarm::debug() {
+    switch (key_) {
+        case 'x':
+            soundplayer_.cancel();
+            break;
+        case 'c':
+            videoplayer_.cancel();
+            break;
+        case '1':
+            videoplayer_.showImage(black_);
+            break;
+        case '2':
+            videoplayer_.showImage(face1_);
+            break;
+        case '3':
+            videoplayer_.showImage(face2_);
+            break;
+        case '4':
+            videoplayer_.showImage(face3_);
+            break;
+        case '5':
+            videoplayer_.showImage(face4_);
+            break;
+        case '6':
+            videoplayer_.showImage(face5_);
+            break;
+        case '7':
+            break;
+        case '8':
+            break;
+        case '9':
+            break;
+        case 'q':
+            videoplayer_.setVideo(curse_video_);
+            videoplayer_.play();
+            break;
+        case 'w':
+            break;
+        case 'a':
+            soundplayer_.say("MA SU KU O TU KE NA SA I");
+            break;
+        case 's':
+            soundplayer_.setSound(curse_sound_);
+            soundplayer_.play();
+            break;
+        case 'd':
+            soundplayer_.setSound(curse_sound1_);
+            soundplayer_.play();
+            break;
+        case 'f':
+            soundplayer_.setSound(curse_sound2_);
+            soundplayer_.play();
+            break;
+        case 'o':
+            startTimer(10);
+            break;
+        case 'p':
+            if (checkTimer()) {
+                ROS_INFO("Time Up!!");
+            }
+            break;
+    }
+}
+
+void NomaskAlarm::startTimer(double t) {
+    start_t_ = ros::Time::now();
+    limit_t_ = ros::Duration(t);
+}
+
+bool NomaskAlarm::checkTimer() {
+    ros::Duration t = ros::Time::now() - start_t_;
+    if (ros::Time::now() - start_t_ > limit_t_) {
+        return true;
+    }else {
+        std::cout << t << std::endl;
+        return false;
+    }
+}
 
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "nomask_alarm_node");
-    ros::NodeHandle nh("~");
-    ros::Rate looprate(10);
 
-    std::string sample_sound1, sample_sound2;
-    std::string sample_video1;
-    std::string sample_image1, sample_image2;
-    nh.param("sample_sound1", sample_sound1, std::string("/home/suzuki-t/nomask_media/sample1.wav"));
-    nh.param("sample_sound2", sample_sound2, std::string("/home/suzuki-t/nomask_media/sample2.wav"));
-	nh.param("sample_video1", sample_video1, std::string("/home/suzuki-t/nomask_media/sample1.mp4"));
-    nh.param("sample_image1", sample_image1, std::string("/home/suzuki-t/nomask_media/sample1.jpg"));
-	nh.param("sample_image2", sample_image2, std::string("/home/suzuki-t/nomask_media/sample2.jpg"));
+    NomaskAlarm n;
 
-    std::string curse_sound, curse_sound1, curse_sound2;
-    std::string curse_video;
-    std::string face1, face2, face3, face4;
-    nh.param("curse_sound", curse_sound, std::string("/home/suzuki-t/nomask_media/curse.wav"));
-    nh.param("curse_sound1", curse_sound1, std::string("/home/suzuki-t/nomask_media/curse1.wav"));
-    nh.param("curse_sound2", curse_sound2, std::string("/home/suzuki-t/nomask_media/curse2.wav"));
-	nh.param("curse_video", curse_video, std::string("/home/suzuki-t/nomask_media/curse.mp4"));
-	nh.param("face1", face1, std::string("/home/suzuki-t/nomask_media/face1.png"));
-	nh.param("face2", face2, std::string("/home/suzuki-t/nomask_media/face2.png"));
-	nh.param("face3", face3, std::string("/home/suzuki-t/nomask_media/face3.png"));
-	nh.param("face4", face4, std::string("/home/suzuki-t/nomask_media/face4.png"));
-
-
-    SoundPlayer soundplayer;
-    VideoPlayer videoplayer;
-    Judgement judgement;
-    looprate.sleep(); // 少し待つ
-
-    int state = 1;
-
-    while (ros::ok()) {
-
-        if (1) {
-            char key;
-            if (kbhit()) {
-                std::cin >> key;
-                std::cout << "input key... " << key << std::endl;
-            }
-            switch (key) {
-                case 'x':
-                    soundplayer.cancel();
-                    break;
-                case 'c':
-                    videoplayer.cancel();
-                    break;
-                case '1':
-                    soundplayer.say("MASUKUWOTUKENASAI");
-                    break;
-                case '2':
-                    soundplayer.setSound(sample_sound2);
-                    soundplayer.play();
-                    break;
-                case '3':
-                    soundplayer.setSound(curse_sound1);
-                    soundplayer.play();
-                    break;
-                case '4':
-                    soundplayer.setSound(curse_sound2);
-                    soundplayer.play();
-                    break;
-                case '5':
-                    videoplayer.setVideo(curse_video);
-                    videoplayer.playOnce();
-                    break;
-                case '6':
-                    videoplayer.showImage(face1);
-                    break;
-                case '7':
-                    videoplayer.showImage(face2);
-                    break;
-                case '8':
-                    videoplayer.showImage(face3);
-                    break;
-                case '9':
-                    videoplayer.showImage(face4);
-                    break;
-            }
-            key = '@';
-    }
-    else
-    {
-        char key;
-        if (kbhit()) {
-            std::cin >> key;
-            std::cout << "input key... " << key << std::endl;
-        }
-        switch (state){
-            case 1:
-                if (judgement.judge()){
-                    videoplayer.setVideo(curse_video);
-                    videoplayer.playOnce();
-                    break;
-                }else{
-                    videoplayer.showImage(sample_image1);
-                    break;
-                }
-                break;
-            case 2:
-                break;
-            default:
-                break;
-        }
-    }
-        
-
-        ros::spinOnce();
-        looprate.sleep();
-    }
+    ros::spin();
 
     return 0;
 }
