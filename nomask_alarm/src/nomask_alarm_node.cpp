@@ -28,6 +28,7 @@ NomaskAlarm::NomaskAlarm(){
     limit_t_ = ros::Duration(1);
 
     state_ = 1;
+    flag_state_ = 0;
 
     ros::Duration(1).sleep();
 
@@ -40,7 +41,7 @@ NomaskAlarm::~NomaskAlarm(){
 void NomaskAlarm::timerCallback(const ros::TimerEvent&){
     if (kbhit()) {
         std::cin >> key_;
-        std::cout << "input key... " << key_ << std::endl;
+        // std::cout << "input key... " << key_ << std::endl;
     }
     
     if (debug_) {
@@ -50,37 +51,6 @@ void NomaskAlarm::timerCallback(const ros::TimerEvent&){
     }
     
     key_ = '@';
-}
-
-void NomaskAlarm::run() {
-    switch (state_){
-        case 1:
-            // ROS_INFO("wait...");
-            if (key_ == 's') {
-                state_ = 2;
-            }
-            break;
-        case 2:
-            videoplayer_.showImage(face1_);
-            startTimer(5);
-            state_ = 3;
-            break;
-        case 3:
-            if (checkTimer()){
-                state_ = 4;
-            }
-            break;
-        case 4:
-            if (judgement_.judge()){
-                videoplayer_.showImage(face4_);
-            } else {
-                videoplayer_.showImage(face5_);
-            }
-            state_ = 1;
-            break;
-        default:
-            break;
-    }
 }
 
 void NomaskAlarm::debug() {
@@ -147,6 +117,114 @@ void NomaskAlarm::debug() {
     }
 }
 
+void NomaskAlarm::run() {
+    switch (state_){
+        case 1:
+            if (key_ == 's') {
+                state_ = 2;
+            }
+            break;
+        case 2:
+            videoplayer_.showImage(face1_);
+            startTimer(5);
+            state_ = 3;
+            break;
+        case 3:
+            if (checkTimer()){
+                state_ = 4;
+            }
+            break;
+        case 4:
+            if (!judgement_.judge()){
+                state_ = 0;
+            } else {
+                videoplayer_.showImage(face2_);
+                soundplayer_.say("MA SU KU O TU KE NA SA I");
+                startTimer(5);
+                state_ = 5;
+            }
+            break;
+        case 5:
+            if(checkTimer()){
+                state_ = 6;
+            }
+            break;
+        case 6:
+            if (!judgement_.judge()){
+                state_ = 0;
+            } else {
+                videoplayer_.showImage(face3_);
+                soundplayer_.say("MA SU KU O TU KE NA SA I");
+                startTimer(5);
+                state_ = 7;
+            }
+            break;
+        case 7:
+            if(checkTimer()) {
+                state_ = 8;
+            }
+            break;
+        case 8:
+            if (!judgement_.judge()){
+                state_ = 0;
+            } else {
+                videoplayer_.showImage(face4_);
+                startTimer(5);
+                state_ = 9;
+            }
+            break;
+        case 9:
+            if(checkTimer()) {
+                state_ = 10;
+            }
+            break;
+        case 10:
+            if (!judgement_.judge()){
+                state_ = 0;
+            } else {
+                videoplayer_.setVideo(curse_video_);
+                videoplayer_.play();
+                startTimer(5);
+                state_ = 11;
+            }
+            break;
+        case 11:
+            if(checkTimer()) {
+                state_ = 2;
+                ROS_INFO("owari");
+            }
+            break;
+        case 0:
+            videoplayer_.showImage(face5_);
+            startTimer(5);
+            state_ = 20;
+        case 20:
+            if(checkTimer()) {
+                state_ = 21;
+            }
+            break;
+        case 21:
+            if (!judgement_.judge()){
+                state_ = 0;
+            } else {
+                state_ = 2;
+            }
+            break;
+        default:
+            break;
+    }
+    printState();
+}
+
+bool NomaskAlarm::printState() {
+    if (state_ != flag_state_){
+        ROS_INFO("now state... %d", state_);
+        flag_state_ = state_;
+        return true;
+    }
+    return false;
+}
+
 void NomaskAlarm::startTimer(double t) {
     start_t_ = ros::Time::now();
     limit_t_ = ros::Duration(t);
@@ -157,7 +235,7 @@ bool NomaskAlarm::checkTimer() {
     if (ros::Time::now() - start_t_ > limit_t_) {
         return true;
     }else {
-        std::cout << t << std::endl;
+        // std::cout << t << std::endl;
         return false;
     }
 }

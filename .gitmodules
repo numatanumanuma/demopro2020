@@ -1,6 +1,3 @@
 [submodule "media_player"]
 	path = media_player
 	url = git@github.com:numatanumanuma/media_player.git
-[submodule "fake_darknet_ros"]
-	path = fake_darknet_ros
-	url = git@github.com:numatanumanuma/fake_darknet_ros.git

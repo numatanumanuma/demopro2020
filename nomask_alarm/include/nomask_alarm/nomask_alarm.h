@@ -21,6 +21,7 @@ private:
 
     void debug();
     void run();
+    bool printState();
     void startTimer(double t);
     bool checkTimer();
 
@@ -37,6 +38,7 @@ private:
     std::string black_;
 
     int state_;
+    int flag_state_;
     char key_;
     bool debug_;
 
